@@ -19,7 +19,11 @@ async function bootstrap() {
       .addTag('NodeJS, NestJS, Postgres, sequelize')
       .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('/', app, document);
+    SwaggerModule.setup('/', app, document, {
+      swaggerOptions: {
+        docExpansion: 'none', // collapse the dropdown by default
+      },
+    });
     await app.listen(PORT, () => {
       console.log('Server listening on port', PORT);
     });

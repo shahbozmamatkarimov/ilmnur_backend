@@ -15,6 +15,7 @@ import { generateToken, writeToCookie } from 'src/utils/token';
 import { Video_lesson } from '../video_lesson/models/video_lesson.models';
 import { SubjectService } from '../subjects/subject.service';
 import { Op } from 'sequelize';
+import { Test } from 'src/test/models/test.models';
 
 @Injectable()
 export class LessonService {
@@ -65,7 +66,7 @@ export class LessonService {
     try {
       const lesson = await this.lessonRepository.findOne({
         where: { [Op.and]: [{ class: class_name }, { id: id }] },
-        include: [{ model: Video_lesson }],
+        include: [{ model: Video_lesson }, {model: Test, attributes: ['id']}],
       });
       if (!lesson) {
         throw new NotFoundException('Lesson not found');

@@ -12,6 +12,10 @@ import { LessonModule } from './lessons/lesson.module';
 import { SubjectModule } from './subjects/subject.module';
 import { Video_lessonModule } from './video_lesson/video_lesson.module';
 import { StudentModule } from './student/student.module';
+import { TestModule } from './test/test.module';
+import { VariantsModule } from './variants/variants.module';
+import { ChatGateway } from './gateway/gateway';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -33,6 +37,7 @@ import { StudentModule } from './student/student.module';
       rootPath: resolve(__dirname, '..', 'static'),
     }),
     JwtModule.register({ global: true }),
+    ChatGateway,
     FilesModule,
     AdminModule,
     TeacherModule,
@@ -41,6 +46,9 @@ import { StudentModule } from './student/student.module';
     SubjectModule,
     Video_lessonModule,
     StudentModule,
+    TestModule,
+    VariantsModule,
+    UserModule,
   ],
 })
 export class AppModule {}

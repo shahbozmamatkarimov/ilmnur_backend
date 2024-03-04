@@ -1,9 +1,10 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import { Column, DataType, HasMany, Model, Table } from 'sequelize-typescript';
+import { Chat } from 'src/chat/models/chat.model';
 
-interface StudentAttributes {
+interface UserAttributes {
   full_name: string;
   phone: string;
-  role: string;
+  role: string[];
   subject: string;
 }
 
@@ -12,8 +13,8 @@ export enum GenderType {
   FEMALE = 'FEMALE',
 }
 
-@Table({ tableName: 'student' })
-export class Student extends Model<Student, StudentAttributes> {
+@Table({ tableName: 'user' })
+export class User extends Model<User, UserAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -45,6 +46,9 @@ export class Student extends Model<Student, StudentAttributes> {
     allowNull: true,
   })
   image: string;
+
+  @Column({ type: DataType.JSON })
+  role: object;
 
   @Column(
     DataType.ENUM({
@@ -79,7 +83,13 @@ export class Student extends Model<Student, StudentAttributes> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
   })
   hashed_password: string;
+
+  @HasMany(() => Chat, {
+    onDelete: 'CASCADE',
+    hooks: true,
+  })
+  chats: Chat[];
 }

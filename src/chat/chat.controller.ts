@@ -89,7 +89,7 @@ export class ChatController
   // @UseGuards(AuthGuard)
   @Post('')
   @UseInterceptors(FileInterceptor('image'))
-  create_app(
+  create(
     @Body() chatDto: ChatDto,
     @UploadedFile(new ImageValidationPipe()) file: Express.Multer.File,
   ) {
@@ -104,7 +104,7 @@ export class ChatController
     @ConnectedSocket() client: Socket,
   ) {
     const chats = await this.chatService.findAll(page);
-    client.emit('chats', chats);
+    this.server.emit('chats', chats);
   }
 
   @ApiOperation({ summary: 'Get chat by ID' })

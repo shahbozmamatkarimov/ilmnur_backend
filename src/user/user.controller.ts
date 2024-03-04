@@ -10,102 +10,104 @@ import {
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
-import { StudentService } from './student.service';
+import { UserService } from './user.service';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CookieGetter } from 'src/decorators/cookieGetter.decorator';
 import { NewPasswordDto } from './dto/new-password.dto';
-import { RegisterStudentDto } from './dto/register.dto';
+import { RegisterUserDto } from './dto/register.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ChatDto } from '../chat/dto/chat.dto';
 import { ImageValidationPipe } from '../pipes/image-validation.pipe';
-import { LoginStudentDto } from './dto/login.dto';
+import { LoginUserDto } from './dto/login.dto';
 import { UpdateDto } from './dto/update.dto';
 
-@ApiTags('Student')
-@Controller('student')
-export class StudentController {
-  constructor(private readonly studentService: StudentService) {}
+@ApiTags('User')
+@Controller('user')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
 
-  @ApiOperation({ summary: 'Registration a new student' })
+  @ApiOperation({ summary: 'Registration a new user' })
   @Post('register')
   register(
-    @Body() registerStudentDto: RegisterStudentDto,
+    @Body() registerUserDto: RegisterUserDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.studentService.register(registerStudentDto);
+    return this.userService.register(registerUserDto);
   }
 
-  @ApiOperation({ summary: 'Login student with send OTP' })
+  @ApiOperation({ summary: 'Login user with send OTP' })
   @Post('login')
   login(
-    @Body() loginStudentDto: LoginStudentDto,
+    @Body() loginUserDto: LoginUserDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.studentService.login(loginStudentDto, res);
+    return this.userService.login(loginUserDto, res);
   }
 
-  // @ApiOperation({ summary: 'Verify login student' })
+  // @ApiOperation({ summary: 'Verify login user' })
   // @Post('verifyLogin')
   // verifLogin(
   //   @Body() verifyOtpDto: VerifyOtpDto,
   //   @Res({ passthrough: true }) res: Response,
   // ) {
-  //   return this.studentService.verifyLogin(verifyOtpDto, res);
+  //   return this.userService.verifyLogin(verifyOtpDto, res);
   // }
 
-  @ApiOperation({ summary: 'Get all students' })
+  @ApiOperation({ summary: 'Get all users' })
   // @UseGuards(AuthGuard)
-  @Get()
-  getAll() {
-    return this.studentService.getAll();
+  @Get('getByRole/:role')
+  getAll(
+    @Param('role') role: string
+  ) {
+    return this.userService.getAll(role);
   }
 
-  @ApiOperation({ summary: 'Get student reytings' })
+  @ApiOperation({ summary: 'Get user reytings' })
   @Get('/reyting')
   getReyting() {
-    return this.studentService.getReyting();
+    return this.userService.getReyting();
   }
 
-  @ApiOperation({ summary: 'Get student by ID' })
+  @ApiOperation({ summary: 'Get user by ID' })
   // @UseGuards(AuthGuard)
   @Get(':id')
   getById(@Param('id') id: string) {
-    return this.studentService.getById(id);
+    return this.userService.getById(id);
   }
 
-  @ApiOperation({ summary: 'Get students with pagination' })
+  @ApiOperation({ summary: 'Get users with pagination' })
   // @UseGuards(AuthGuard)
   @Get('pagination/:page/:limit')
   pagination(@Param('page') page: number, @Param('limit') limit: number) {
-    return this.studentService.pagination(page, limit);
+    return this.userService.pagination(page, limit);
   }
 
-  // @ApiOperation({ summary: 'New password of student' })
+  // @ApiOperation({ summary: 'New password of user' })
   // // @UseGuards(AuthGuard)
   // @Put('newPassword/:id')
   // newPassword(@Param('id') id: string, @Body() newPasswordDto: NewPasswordDto) {
-  //   return this.studentService.newPassword(id, newPasswordDto);
+  //   return this.userService.newPassword(id, newPasswordDto);
   // }
 
-  // @ApiOperation({ summary: 'Forgot password for student' })
+  // @ApiOperation({ summary: 'Forgot password for user' })
   // // @UseGuards(AuthGuard)
   // @Put('forgotPassword/:id')
   // forgotPassword(
   //   @Param('id') id: string,
   //   @Body() forgotPasswordDto: ForgotPasswordDto,
   // ) {
-  //   return this.studentService.forgotPassword(id, forgotPasswordDto);
+  //   return this.userService.forgotPassword(id, forgotPasswordDto);
   // }
 
-  @ApiOperation({ summary: 'Update student profile by ID' })
+  @ApiOperation({ summary: 'Update user profile by ID' })
   // @UseGuards(AuthGuard)
   @Put('profile/:id')
   update(
     @Param('id') id: string,
     @Body() updateDto: UpdateDto,
   ) {
-    return this.studentService.update(id, updateDto);
+    return this.userService.update(id, updateDto);
   }
 
   
@@ -136,14 +138,14 @@ export class StudentController {
     @Param('id') id: string,
     @UploadedFile(new ImageValidationPipe()) image: Express.Multer.File,
   ) {
-    return this.studentService.updateProfileImage(id, image);
+    return this.userService.updateProfileImage(id, image);
   }
 
-  @ApiOperation({ summary: 'Delete student by ID' })
+  @ApiOperation({ summary: 'Delete user by ID' })
   // @UseGuards(AuthGuard)
   @Delete(':id')
-  deleteStudent(@Param('id') id: string) {
-    return this.studentService.deleteStudent(id);
+  deleteUser(@Param('id') id: string) {
+    return this.userService.deleteUser(id);
   }
 
   // @ApiOperation({ summary: 'Get orders with pagination' })

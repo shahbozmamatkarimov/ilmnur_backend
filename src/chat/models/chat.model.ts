@@ -7,6 +7,7 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
+import { User } from 'src/user/models/user.models';
 
 interface ChatAttr {
   icon: number;
@@ -41,17 +42,21 @@ export class Chat extends Model<Chat, ChatAttr> {
   @Column({ type: DataType.JSON })
   file_type: object;
 
+  @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
   })
   user_id: number;
+
+  @BelongsTo(() => User)
+  user: User[];
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
   recipient_id: number;
+  
 
   @Column({
     type: DataType.STRING,

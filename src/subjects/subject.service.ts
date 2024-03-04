@@ -19,7 +19,7 @@ export class SubjectService {
   constructor(
     @InjectModel(Subject) private subjectRepository: typeof Subject,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async create(subjectDto: SubjectDto): Promise<object> {
     try {
@@ -42,32 +42,50 @@ export class SubjectService {
   }
 
   async getAll(class_name: number): Promise<object> {
+    const class_names = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    let subjects: any;
+    let data: any = []
     try {
-      const subjects = await this.subjectRepository.findAll({
-        attributes: {
-          include: [
-            [
-              Sequelize.literal(
-                `(SELECT COUNT(*) FROM "lesson" WHERE "lesson"."subject_id" = "Subject"."id" and "lesson"."class" = ${class_name})`,
-              ),
-              'lessonsCount',
-            ],
-            [
-              Sequelize.literal(`(
-                SELECT SUM("video_lesson"."duration")
-                FROM "lesson"
-                INNER JOIN "video_lesson" ON "lesson"."id" = "video_lesson"."lesson_id"
-                WHERE "lesson"."subject_id" = "Subject"."id"
-                AND "lesson"."class" = '${class_name}'
+      for (let i of class_names) {
+        subjects = await this.subjectRepository.findAll({
+          attributes: {
+            include: [
+              [
+                Sequelize.literal(
+                  `(SELECT COUNT(*) FROM "lesson" WHERE "lesson"."subject_id" = "Subject"."id" and "lesson"."class" = ${i})`,
+                ),
+                'lessonsCount',
+              ],
+              [
+                Sequelize.literal(`COALESCE(
+                  (
+                      SELECT SUM("video_lesson"."duration")
+                      FROM "lesson"
+                      INNER JOIN "video_lesson" ON "lesson"."id" = "video_lesson"."lesson_id"
+                      WHERE "lesson"."subject_id" = "Subject"."id"
+                      AND "lesson"."class" = '${i}'
+                  ),
+                  0
               )`),
-              'totalDuration',
+                'totalDuration',
+              ],
             ],
-          ],
-        },
-      });
+          },
+        });
+        if (data.length) {
+          for (let i in data[0]) {
+            data[0][i].dataValues.totalDuration = String(data[0][i].dataValues.totalDuration).split(",")
+            data[0][i].dataValues.lessonsCount = String(data[0][i].dataValues.lessonsCount).split(",")
+            data[0][i].dataValues.totalDuration.push(subjects[i].dataValues.totalDuration)
+            data[0][i].dataValues.lessonsCount.push(subjects[i].dataValues.lessonsCount)
+          }
+        } else {
+          data.push(subjects);
+        }
+      }
       return {
         statusCode: HttpStatus.OK,
-        data: subjects,
+        data: data[0],
       };
     } catch (error) {
       throw new BadRequestException(error.message);

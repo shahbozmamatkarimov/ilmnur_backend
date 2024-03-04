@@ -7,6 +7,7 @@ import { SearchDto } from './dto/search.dto';
 import { Sequelize } from 'sequelize-typescript';
 import { FilesService } from '../files/files.service';
 import cloudinary from '../../cloudinary.config';
+import { User } from 'src/user/models/user.models';
 
 @Injectable()
 export class ChatService {
@@ -24,7 +25,7 @@ export class ChatService {
       if (file) {
         file = await this.fileService.createFile(file);
         if (file != 'error') {
-          chatDto.file = result.url;
+          chatDto.file = file;
         } else {
           return {
             status: HttpStatus.BAD_REQUEST,
@@ -45,15 +46,11 @@ export class ChatService {
     console.log(offset);
     try {
       const chats = await this.ChatRepository.findAll({
-        order: [['id', 'DESC']],
+        order: [['updatedAt', 'DESC']],
         include: [
-          // {
-          //   model: Test,
-          //   order: [['id', 'DESC']],
-          //   limit: 1,
-          // },
-          // { model: Subject, order: [['id', 'DESC']] },
-          // { model: Teacher, attributes: ['username'] },
+          {
+            model: User,
+          },
         ],
         offset,
         limit,
@@ -63,7 +60,7 @@ export class ChatService {
       const res = {
         status: HttpStatus.OK,
         data: {
-          records: chats,
+          records: chats.reverse(),
           pagination: {
             currentPage: page,
             total_pages,
