@@ -8,6 +8,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { FilesService } from '../files/files.service';
 import cloudinary from '../../cloudinary.config';
 import { User } from 'src/user/models/user.models';
+import * as DeviceDetector from 'device-detector-js';
 
 @Injectable()
 export class ChatService {
@@ -15,11 +16,16 @@ export class ChatService {
     @InjectModel(Chat)
     private readonly ChatRepository: typeof Chat,
     private readonly fileService: FilesService,
-  ) {}
+  ) { }
+  private readonly deviceDetector = new DeviceDetector();
 
-  async create(chatDto: ChatDto, file: any) {
+  async create(chatDto: ChatDto, file: any, headers: { 'user-agent': string }) {
     try {
-      console.log(chatDto.user_id);
+      // const deviceDetector = new DeviceDetector();
+      console.log(chatDto.chatgroup_id, '++++++++++++++++');
+      const userAgent = headers['user-agent'];
+      const result_detect = this.deviceDetector.parse(userAgent);
+      console.log(JSON.stringify(result_detect));
       let result: any;
       let filePath: string;
       if (file) {
@@ -33,7 +39,7 @@ export class ChatService {
           };
         }
       }
-      const chat = await this.ChatRepository.create(chatDto);
+      const chat = await this.ChatRepository.create({ ...chatDto });
       return { status: HttpStatus.OK, data: chat };
     } catch (error) {
       return { status: HttpStatus.BAD_REQUEST, error: error.message };
@@ -46,6 +52,44 @@ export class ChatService {
     console.log(offset);
     try {
       const chats = await this.ChatRepository.findAll({
+        order: [['updatedAt', 'DESC']],
+        include: [
+          {
+            model: User,
+          },
+        ],
+        offset,
+        limit,
+      });
+      const total_count = await this.ChatRepository.count();
+      const total_pages = Math.ceil(total_count / limit);
+      const res = {
+        status: HttpStatus.OK,
+        data: {
+          records: chats.reverse(),
+          pagination: {
+            currentPage: page,
+            total_pages,
+            total_count,
+          },
+        },
+      };
+      return res;
+    } catch (error) {
+      console.log(error);
+      return { status: HttpStatus.NOT_FOUND, error: error.message };
+    }
+  }
+
+  async getGroupChats(chatgroup_id: number, page: number) {
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    console.log(offset);
+    try {
+      const chats = await this.ChatRepository.findAll({
+        where: {
+          chatgroup_id,
+        },
         order: [['updatedAt', 'DESC']],
         include: [
           {

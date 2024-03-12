@@ -1,54 +1,53 @@
 import {
   BadRequestException,
-  ForbiddenException,
   HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Lesson } from './models/lesson.models';
+import { Class } from './models/class.models';
 import { InjectModel } from '@nestjs/sequelize';
 import { JwtService } from '@nestjs/jwt';
-import { compare, hash } from 'bcryptjs';
-import { Response } from 'express';
-import { LessonDto } from './dto/lesson.dto';
-import { generateToken, writeToCookie } from 'src/utils/token';
-import { Video_lesson } from '../video_lesson/models/video_lesson.models';
+import { ClassDto } from './dto/class.dto';
 import { SubjectService } from '../subjects/subject.service';
 import { Op } from 'sequelize';
-import { Test } from 'src/test/models/test.models';
 
 @Injectable()
-export class LessonService {
+export class ClassService {
   constructor(
-    @InjectModel(Lesson) private lessonRepository: typeof Lesson,
+    @InjectModel(Class) private classRepository: typeof Class,
     private readonly jwtService: JwtService,
     private readonly subjectService: SubjectService,
-  ) {}
+  ) { }
 
-  async create(lessonDto: LessonDto): Promise<object> {
+  async create(classDto: ClassDto): Promise<object> {
     try {
-      const lesson = await this.lessonRepository.create(lessonDto);
+      const { class_number, name } = classDto;
+      const exist = await this.classRepository.findOne({
+        where: { class_number, name },
+      });
+      if (exist) {
+        throw new BadRequestException('Already created');
+      }
+      const data = await this.classRepository.create(classDto);
+
       return {
         statusCode: HttpStatus.OK,
         message: 'Created successfully',
-        data: lesson,
+        data,
       };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 
-  async getAll(class_name: number, subject: string): Promise<object> {
+  async getAll(): Promise<object> {
     try {
-      const subject_id: any = await this.subjectService.getByTitle(subject);
-      const lessons = await this.lessonRepository.findAll({
-        where: { class: class_name, subject_id: subject_id.data.id },
-        include: [{ model: Video_lesson, attributes: ['duration'] }],
-        order: [['id', 'ASC']],
+      const classs = await this.classRepository.findAll({
+        order: [['class_number', 'ASC'], ['name', 'ASC']],
       });
       return {
         statusCode: HttpStatus.OK,
-        data: lessons,
+        data: classs,
       };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -57,16 +56,15 @@ export class LessonService {
 
   async getById(id: number, class_name: number): Promise<object> {
     try {
-      const lesson = await this.lessonRepository.findOne({
-        where: { [Op.and]: [{ class: class_name }, { id: id }] },
-        include: [{ model: Video_lesson }, {model: Test, attributes: ['id']}],
+      const classes = await this.classRepository.findOne({
+        // where: { [Op.and]: [{ class: class_name }, { id: id }] },
       });
-      if (!lesson) {
-        throw new NotFoundException('Lesson not found');
+      if (!classes) {
+        throw new NotFoundException('Class not found');
       }
       return {
         statusCode: HttpStatus.OK,
-        data: lesson,
+        data: classes,
       };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -77,13 +75,13 @@ export class LessonService {
     try {
       const offset = (page - 1) * 10;
       const limit = 10;
-      const lessons = await this.lessonRepository.findAll({ offset, limit });
-      const total_count = await this.lessonRepository.count();
+      const classs = await this.classRepository.findAll({ offset, limit });
+      const total_count = await this.classRepository.count();
       const total_pages = Math.ceil(total_count / 10);
       const response = {
         statusCode: HttpStatus.OK,
         data: {
-          records: lessons,
+          records: classs,
           pagination: {
             currentPage: page,
             total_pages,
@@ -97,13 +95,13 @@ export class LessonService {
     }
   }
 
-  async update(id: number, lessonDto: LessonDto): Promise<object> {
+  async update(id: number, classDto: ClassDto): Promise<object> {
     try {
-      const lesson = await this.lessonRepository.findByPk(id);
-      if (!lesson) {
-        throw new NotFoundException('Lesson not found');
+      const classes = await this.classRepository.findByPk(id);
+      if (!classes) {
+        throw new NotFoundException('Class not found');
       }
-      const update = await this.lessonRepository.update(lessonDto, {
+      const update = await this.classRepository.update(classDto, {
         where: { id },
         returning: true,
       });
@@ -111,7 +109,7 @@ export class LessonService {
         statusCode: HttpStatus.OK,
         message: 'Updated successfully',
         data: {
-          lesson: update[1][0],
+          class: update[1][0],
         },
       };
     } catch (error) {
@@ -121,11 +119,11 @@ export class LessonService {
 
   async delete(id: number): Promise<object> {
     try {
-      const lesson = await this.lessonRepository.findByPk(id);
-      if (!lesson) {
-        throw new NotFoundException('Lesson not found');
+      const classes = await this.classRepository.findByPk(id);
+      if (!classes) {
+        throw new NotFoundException('Class not found');
       }
-      lesson.destroy();
+      classes.destroy();
       return {
         statusCode: HttpStatus.OK,
         message: 'Deleted successfully',

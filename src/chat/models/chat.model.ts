@@ -7,6 +7,7 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
+import { ChatGroup } from 'src/chat_group/models/chat_group.models';
 import { User } from 'src/user/models/user.models';
 
 interface ChatAttr {
@@ -14,7 +15,7 @@ interface ChatAttr {
   text: string;
   file_type: object;
   user_id: number;
-  recipient_id: number;
+  chatgroup_id: number;
   file: string;
 }
 
@@ -51,12 +52,14 @@ export class Chat extends Model<Chat, ChatAttr> {
   @BelongsTo(() => User)
   user: User[];
 
+  @ForeignKey(() => ChatGroup)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
   })
-  recipient_id: number;
-  
+  chatgroup_id: number;
+
+  @BelongsTo(() => ChatGroup)
+  chatgroups: ChatGroup[];
 
   @Column({
     type: DataType.STRING,

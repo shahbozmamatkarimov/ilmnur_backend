@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class RegisterUserDto {
   @ApiProperty({
@@ -25,4 +25,12 @@ export class RegisterUserDto {
   @IsNotEmpty()
   @IsArray()
   role: string[];
+
+  @ApiProperty({
+    example: [["1", "A"], ["2", "B"], ["3", "C"], ["4", "D"], ["5", "E"]],
+    description: 'Classes of the user',
+  })
+  @IsOptional()
+  @IsArray()
+  class: string[][];
 }

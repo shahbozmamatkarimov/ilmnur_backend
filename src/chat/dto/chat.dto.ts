@@ -48,8 +48,8 @@ export class ChatDto {
 
   @ApiProperty({
     example: 1,
-    description: 'Recipient_id',
+    description: 'chatgroup_id',
   })
   @IsNotEmpty()
-  recipient_id: number;
+  chatgroup_id: number;
 }

@@ -6,8 +6,9 @@ import { Chat } from './models/chat.model';
 import { JwtModule } from '@nestjs/jwt';
 import { FilesModule } from '../files/files.module';
 import { UserModule } from 'src/user/user.module';
+import { ChatGroupModule } from 'src/chat_group/chat_group.module';
 @Module({
-  imports: [SequelizeModule.forFeature([Chat]), FilesModule, UserModule, ],
+  imports: [SequelizeModule.forFeature([Chat]), FilesModule, UserModule, ChatGroupModule ],
   controllers: [ChatController],
   providers: [ChatService, ChatController],
   exports: [ChatService],

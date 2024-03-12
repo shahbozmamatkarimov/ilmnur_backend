@@ -6,6 +6,7 @@ interface UserAttributes {
   phone: string;
   role: string[];
   subject: string;
+  class: string[][];
 }
 
 export enum GenderType {
@@ -36,10 +37,10 @@ export class User extends Model<User, UserAttributes> {
   phone: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.JSON,
     allowNull: true,
   })
-  class: string;
+  class: string[][];
 
   @Column({
     type: DataType.STRING,
@@ -47,8 +48,8 @@ export class User extends Model<User, UserAttributes> {
   })
   image: string;
 
-  @Column({ type: DataType.JSON })
-  role: object;
+  @Column({ type: DataType.ARRAY(DataType.STRING) })
+  role: string[];
 
   @Column(
     DataType.ENUM({

@@ -9,6 +9,7 @@ import {
   Res,
   UseInterceptors,
   UploadedFile,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -21,11 +22,12 @@ import { ChatDto } from '../chat/dto/chat.dto';
 import { ImageValidationPipe } from '../pipes/image-validation.pipe';
 import { LoginUserDto } from './dto/login.dto';
 import { UpdateDto } from './dto/update.dto';
+import UserAgent from 'user-agents';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @ApiOperation({ summary: 'Registration a new user' })
   @Post('register')
@@ -41,7 +43,16 @@ export class UserController {
   login(
     @Body() loginUserDto: LoginUserDto,
     @Res({ passthrough: true }) res: Response,
+    // @Req() req: Request,
   ) {
+    // const userAgent = req.headers['user-agent'];
+    // const ua = new UserAgent(userAgent);
+
+    // const browser = ua.browser; // String representing the browser name (e.g., 'Chrome')
+    // const version = ua.version; // String representing the browser version (e.g., '107.0.0.0')
+    // const os = ua.os; // Object containing information about the operating system
+
+    // console.log(`Browser: ${browser}, Version: ${version}, OS: ${os.name}`);
     return this.userService.login(loginUserDto, res);
   }
 
@@ -110,7 +121,7 @@ export class UserController {
     return this.userService.update(id, updateDto);
   }
 
-  
+
   // create_app(
   //   @Body() chatDto: ChatDto,
   //   @UploadedFile(new ImageValidationPipe()) file: Express.Multer.File,

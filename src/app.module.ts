@@ -16,6 +16,8 @@ import { TestModule } from './test/test.module';
 import { VariantsModule } from './variants/variants.module';
 import { ChatGateway } from './gateway/gateway';
 import { UserModule } from './user/user.module';
+import { ClassModule } from './class/class.module';
+import { ChatGroupModule } from './chat_group/chat_group.module';
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { UserModule } from './user/user.module';
     TestModule,
     VariantsModule,
     UserModule,
+    ClassModule,
+    ChatGroupModule,
   ],
 })
 export class AppModule {}

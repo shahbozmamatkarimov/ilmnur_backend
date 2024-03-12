@@ -16,7 +16,7 @@ import { generateToken, writeToCookie } from 'src/utils/token';
 import { LoginUserDto } from './dto/login.dto';
 import { UpdateDto } from './dto/update.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 @Injectable()
 export class UserService {
@@ -103,7 +103,7 @@ export class UserService {
     try {
       const users = await this.userRepository.findAll({
         where: {
-          role: {}
+          role: {[Op.overlap]: [role],}
         }
       });
       return {
