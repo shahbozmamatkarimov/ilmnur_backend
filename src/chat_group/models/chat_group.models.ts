@@ -1,14 +1,10 @@
 import {
-  BelongsTo,
   Column,
   DataType,
-  ForeignKey,
   HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
-import { Subject } from '../../subjects/models/subject.models';
-import { Test } from 'src/test/models/test.models';
 import { ChatGroupType } from '../dto/chat_group.dto';
 import { Chat } from 'src/chat/models/chat.model';
 

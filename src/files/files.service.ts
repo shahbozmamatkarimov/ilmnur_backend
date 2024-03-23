@@ -6,8 +6,16 @@ import cloudinary from '../../cloudinary.config';
 
 @Injectable()
 export class FilesService {
-  async createFile(file: any): Promise<string> {
+  async createFile(file: any, file_type: string): Promise<string> {
     try {
+      console.log(file.mimetype.split('/')[0])
+      console.log(file_type)
+      if (file.mimetype.split('/')[0] != file_type) {
+        throw new HttpException(
+          'File type not supported',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ); 
+      }
       const fileTypeIndex = file?.originalname.lastIndexOf('.');
       const fileType = file?.originalname.slice(fileTypeIndex);
       const file_name = v4() + fileType;
@@ -16,7 +24,6 @@ export class FilesService {
         mkdirSync(file_path, { recursive: true });
       }
       writeFileSync(join(file_path, file_name), file.buffer);
-
       const filePath: string = 'dist/static/' + file_name;
       let result: any;
 
@@ -32,7 +39,7 @@ export class FilesService {
         return 'error';
       }
 
-      return result.url;
+      return result;
     } catch (error) {
       throw new HttpException(
         'Error creating file: ' + error.message,

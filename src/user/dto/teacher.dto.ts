@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class RegisterUserDto {
+export class TeacherDto {
   @ApiProperty({
     example: 'John Smith',
     description: 'Full name of user',
@@ -30,7 +30,7 @@ export class RegisterUserDto {
     example: ['Maths', 'Biology'],
     description: 'Subjects of the user',
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsArray()
   subjects: string[];
 
@@ -38,7 +38,7 @@ export class RegisterUserDto {
     example: [["1", "A"], ["2", "B"], ["3", "C"], ["4", "D"], ["5", "E"]],
     description: 'Classes of the user',
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsArray()
   class: string[][];
 

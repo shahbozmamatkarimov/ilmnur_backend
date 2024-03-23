@@ -260,7 +260,7 @@ export class StudentService {
         throw new NotFoundException('Student not found');
       }
       if (image) {
-        image = await this.fileService.createFile(image);
+        image = await this.fileService.createFile(image, 'image');
         if (image == 'error') {
           return {
             status: HttpStatus.BAD_REQUEST,

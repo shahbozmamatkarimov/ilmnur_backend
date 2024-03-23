@@ -28,7 +28,6 @@ export class UserService {
 
   async register(registerUserDto: RegisterUserDto): Promise<object> {
     try {
-      console.log(registerUserDto)
       const { phone } = registerUserDto;
       const is_phone = await this.userRepository.findOne({
         where: { phone },
@@ -262,7 +261,7 @@ export class UserService {
         throw new NotFoundException('User not found');
       }
       if (image) {
-        image = await this.fileService.createFile(image);
+        image = await this.fileService.createFile(image, 'image');
         if (image == 'error') {
           return {
             status: HttpStatus.BAD_REQUEST,
@@ -270,7 +269,7 @@ export class UserService {
           };
         }
       }
-      const update = await this.userRepository.update({ image }, {
+      const update = await this.userRepository.update({ image: image.url }, {
         where: { id },
         returning: true,
       });

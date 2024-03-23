@@ -12,12 +12,12 @@ import { LessonModule } from './lessons/lesson.module';
 import { SubjectModule } from './subjects/subject.module';
 import { Video_lessonModule } from './video_lesson/video_lesson.module';
 import { StudentModule } from './student/student.module';
-import { TestModule } from './test/test.module';
-import { VariantsModule } from './variants/variants.module';
 import { ChatGateway } from './gateway/gateway';
 import { UserModule } from './user/user.module';
 import { ClassModule } from './class/class.module';
 import { ChatGroupModule } from './chat_group/chat_group.module';
+import { TestsModule } from './test/test.module';
+import { UploadedModule } from './uploaded/uploaded.module';
 
 @Module({
   imports: [
@@ -48,11 +48,11 @@ import { ChatGroupModule } from './chat_group/chat_group.module';
     SubjectModule,
     Video_lessonModule,
     StudentModule,
-    TestModule,
-    VariantsModule,
+    TestsModule,
     UserModule,
     ClassModule,
     ChatGroupModule,
+    UploadedModule,
   ],
 })
 export class AppModule {}

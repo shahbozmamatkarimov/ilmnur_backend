@@ -23,6 +23,7 @@ import { ImageValidationPipe } from '../pipes/image-validation.pipe';
 import { LoginUserDto } from './dto/login.dto';
 import { UpdateDto } from './dto/update.dto';
 import UserAgent from 'user-agents';
+import { TeacherDto } from './dto/teacher.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -37,6 +38,24 @@ export class UserController {
   ) {
     return this.userService.register(registerUserDto);
   }
+
+  // @ApiOperation({ summary: 'Registration a new user' })
+  // @Post('register/teacher')
+  // registerteacher(
+  //   @Body() teacherDto: TeacherDto,
+  //   @Res({ passthrough: true }) res: Response,
+  // ) {
+  //   return this.userService.register(TeacherDto);
+  // }
+
+   // @ApiOperation({ summary: 'Registration a new user' })
+  // @Post('register/methodological')
+  // registerteacher(
+  //   @Body() teacherDto: TeacherDto,
+  //   @Res({ passthrough: true }) res: Response,
+  // ) {
+  //   return this.userService.register(TeacherDto);
+  // }
 
   @ApiOperation({ summary: 'Login user with send OTP' })
   @Post('login')

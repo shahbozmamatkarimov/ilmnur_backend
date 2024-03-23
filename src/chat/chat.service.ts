@@ -29,7 +29,7 @@ export class ChatService {
       let result: any;
       let filePath: string;
       if (file) {
-        file = await this.fileService.createFile(file);
+        file = await this.fileService.createFile(file, 'image');
         if (file != 'error') {
           chatDto.file = file;
         } else {

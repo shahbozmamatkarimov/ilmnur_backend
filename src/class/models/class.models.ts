@@ -1,14 +1,9 @@
 import {
-  BelongsTo,
   Column,
   DataType,
-  ForeignKey,
-  HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
-import { Subject } from '../../subjects/models/subject.models';
-import { Test } from 'src/test/models/test.models';
 
 interface ClassAttributes {
   class_number: number;

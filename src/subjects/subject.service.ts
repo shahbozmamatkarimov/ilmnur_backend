@@ -59,9 +59,10 @@ export class SubjectService {
               [
                 Sequelize.literal(`COALESCE(
                   (
-                      SELECT SUM("video_lesson"."duration")
+                      SELECT SUM("uploaded"."duration")
                       FROM "lesson"
                       INNER JOIN "video_lesson" ON "lesson"."id" = "video_lesson"."lesson_id"
+                      INNER JOIN "uploaded" ON "video_lesson"."video_id" = "uploaded"."id"
                       WHERE "lesson"."subject_id" = "Subject"."id"
                       AND "lesson"."class" = '${i}'
                   ),

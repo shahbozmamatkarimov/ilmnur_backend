@@ -1,4 +1,3 @@
-import { CheckDto } from './dto/check.dto';
 import {
   BadRequestException,
   ForbiddenException,
@@ -6,34 +5,29 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Test } from './models/test.models';
+import { Tests } from './models/test.models';
 import { InjectModel } from '@nestjs/sequelize';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import { Response } from 'express';
-import { TestDto } from './dto/test.dto';
+import { TestsDto } from './dto/test.dto';
 import { generateToken, writeToCookie } from 'src/utils/token';
 import { Sequelize } from 'sequelize-typescript';
-import { Variants } from '../variants/models/variants.models';
-import { VariantsService } from 'src/variants/variants.service';
-import { StudentService } from 'src/student/student.service';
 
 @Injectable()
-export class TestService {
+export class TestsService {
   constructor(
-    @InjectModel(Test) private testRepository: typeof Test,
-    private readonly variantsService: VariantsService,
-    private readonly studentService: StudentService,
-    // private readonly jwtService: JwtService,
+    @InjectModel(Tests) private testsRepository: typeof Tests,
+    private readonly jwtService: JwtService,
   ) { }
 
-  async create(testDto: TestDto): Promise<object> {
+  async create(testsDto: TestsDto): Promise<object> {
     try {
-      const test = await this.testRepository.create(testDto);
+      const tests = await this.testsRepository.create(testsDto);
       return {
         statusCode: HttpStatus.OK,
         message: 'Created successfully',
-        data: test,
+        data: tests,
       };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -42,12 +36,12 @@ export class TestService {
 
   async getAll(class_name: number): Promise<object> {
     try {
-      const tests = await this.testRepository.findAll({
+      const testss = await this.testsRepository.findAll({
         attributes: {
           include: [
             [
               Sequelize.literal(
-                `(SELECT COUNT(*) FROM "lesson" WHERE "lesson"."test_id" = "Test"."id" and "lesson"."class" = ${class_name})`,
+                `(SELECT COUNT(*) FROM "lesson" WHERE "lesson"."tests_id" = "Tests"."id" and "lesson"."class" = ${class_name})`,
               ),
               'lessonsCount',
             ],
@@ -56,7 +50,7 @@ export class TestService {
                 SELECT SUM("video_lesson"."duration")
                 FROM "lesson"
                 INNER JOIN "video_lesson" ON "lesson"."id" = "video_lesson"."lesson_id"
-                WHERE "lesson"."test_id" = "Test"."id"
+                WHERE "lesson"."tests_id" = "Tests"."id"
                 AND "lesson"."class" = '${class_name}'
               )`),
               'totalDuration',
@@ -66,19 +60,19 @@ export class TestService {
       });
       return {
         statusCode: HttpStatus.OK,
-        data: tests,
+        data: testss,
       };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 
-  async getTests(): Promise<object> {
+  async getTestss(): Promise<object> {
     try {
-      const tests = await this.testRepository.findAll();
+      const testss = await this.testsRepository.findAll();
       return {
         statusCode: HttpStatus.OK,
-        data: tests,
+        data: testss,
       };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -87,70 +81,29 @@ export class TestService {
 
   async getById(id: number): Promise<object> {
     try {
-      const test = await this.testRepository.findByPk(id, {
-        include: [{ model: Variants }],
-      });
-      if (!test) {
-        throw new NotFoundException('Test not found');
+      const tests = await this.testsRepository.findByPk(id);
+      if (!tests) {
+        throw new NotFoundException('Tests not found');
       }
-
-      // Get the variants and randomize their order
-      const variants = await test.get('variants');
-      const randomizedVariants = this.shuffle(variants).map(variant => {
-        const randomizedOptions = this.shuffle(variant.get('variants'));
-        return {
-          ...variant.toJSON(),
-          variants: randomizedOptions,
-        };
-      });
-
       return {
         statusCode: HttpStatus.OK,
-        data: {
-          ...test.toJSON(),
-          variants: randomizedVariants,
-        },
+        data: tests,
       };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 
-  async checkAnswers(student_id: number, checkDto: CheckDto): Promise<object> {
-    const { answers } = checkDto;
+  async checkById(id: number, answer: string): Promise<object> {
     try {
-      const results = {};
-      let student: any;
-      let res: object, id: number, answer: string;
-      for (let i of answers) {
-        id = +i[0];
-        answer = i[1];
-        res = await this.variantsService.checkById(id, answer);
-        results[res[0]] = res[1];
+      const test = await this.testsRepository.findByPk(id);
+      if (!test) {
+        throw new NotFoundException('Tests not found');
       }
-      let ball = 0;
-      for (let i in results) {
-        if (results[i]) {
-          ball += 1;
-        }
+      if (test.tests[0] == answer) {
+        return [id, true];
       }
-      console.log(ball)
-      const percentage = (ball / Object.keys(results)?.length) * 100;
-
-      if (percentage >= 70) {
-        student = await this.studentService.updateTestReyting(student_id);
-      }
-
-      console.log(percentage)
-
-      return {
-        statusCode: HttpStatus.OK,
-        data: {
-          results,
-          ball: [percentage, ball],
-          student,
-        },
-      };
+      return [id, false];
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -158,15 +111,15 @@ export class TestService {
 
   // async getByTitle(title: string): Promise<object> {
   //   try {
-  //     const test = await this.testRepository.findOne({
+  //     const tests = await this.testsRepository.findOne({
   //       where: { title },
   //     });
-  //     if (!test) {
-  //       throw new NotFoundException('Test not found');
+  //     if (!tests) {
+  //       throw new NotFoundException('Tests not found');
   //     }
   //     return {
   //       statusCode: HttpStatus.OK,
-  //       data: test,
+  //       data: tests,
   //     };
   //   } catch (error) {
   //     throw new BadRequestException(error.message);
@@ -177,13 +130,13 @@ export class TestService {
     try {
       const offset = (page - 1) * 10;
       const limit = 10;
-      const tests = await this.testRepository.findAll({ offset, limit });
-      const total_count = await this.testRepository.count();
+      const testss = await this.testsRepository.findAll({ offset, limit });
+      const total_count = await this.testsRepository.count();
       const total_pages = Math.ceil(total_count / 10);
       const response = {
         statusCode: HttpStatus.OK,
         data: {
-          records: tests,
+          records: testss,
           pagination: {
             currentPage: page,
             total_pages,
@@ -197,13 +150,13 @@ export class TestService {
     }
   }
 
-  async update(id: number, testDto: TestDto): Promise<object> {
+  async update(id: number, testsDto: TestsDto): Promise<object> {
     try {
-      const test = await this.testRepository.findByPk(id);
-      if (!test) {
-        throw new NotFoundException('Test not found');
+      const tests = await this.testsRepository.findByPk(id);
+      if (!tests) {
+        throw new NotFoundException('Tests not found');
       }
-      const update = await this.testRepository.update(testDto, {
+      const update = await this.testsRepository.update(testsDto, {
         where: { id },
         returning: true,
       });
@@ -211,7 +164,7 @@ export class TestService {
         statusCode: HttpStatus.OK,
         message: 'Updated successfully',
         data: {
-          test: update[1][0],
+          tests: update[1][0],
         },
       };
     } catch (error) {
@@ -221,11 +174,11 @@ export class TestService {
 
   async delete(id: number): Promise<object> {
     try {
-      const test = await this.testRepository.findByPk(id);
-      if (!test) {
-        throw new NotFoundException('Test not found');
+      const tests = await this.testsRepository.findByPk(id);
+      if (!tests) {
+        throw new NotFoundException('Tests not found');
       }
-      test.destroy();
+      tests.destroy();
       return {
         statusCode: HttpStatus.OK,
         message: 'Deleted successfully',
@@ -233,16 +186,5 @@ export class TestService {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
-  }
-
-  // Function to shuffle an array
-  private shuffle(array: any[]): any[] {
-    const shuffledArray = [...array];
-    const data = []
-    for (let i = shuffledArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
-    }
-    return shuffledArray;
   }
 }

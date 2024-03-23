@@ -1,16 +1,13 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { TestService } from './test.service';
-import { TestController } from './test.controller';
+import { TestsService } from './test.service';
+import { TestsController } from './test.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Test } from './models/test.models';
-import { Variants } from 'src/variants/models/variants.models';
-import { VariantsModule } from 'src/variants/variants.module';
-import { StudentModule } from 'src/student/student.module';
+import { Tests } from './models/test.models';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Test]), forwardRef(() => VariantsModule), StudentModule,],
-  controllers: [TestController],
-  providers: [TestService],
-  exports: [TestService],
+  imports: [SequelizeModule.forFeature([Tests])],
+  controllers: [TestsController],
+  providers: [TestsService], 
+  exports: [TestsService],
 })
-export class TestModule {}
+export class TestsModule {}

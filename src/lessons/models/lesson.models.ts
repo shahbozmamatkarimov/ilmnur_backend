@@ -9,7 +9,7 @@ import {
 } from 'sequelize-typescript';
 import { Subject } from '../../subjects/models/subject.models';
 import { Video_lesson } from '../../video_lesson/models/video_lesson.models';
-import { Test } from 'src/test/models/test.models';
+import { Tests } from 'src/test/models/test.models';
 
 interface LessonAttributes {
   title: string;
@@ -53,9 +53,9 @@ export class Lesson extends Model<Lesson, LessonAttributes> {
   })
   video_lesson: Video_lesson[];
 
-  @HasMany(() => Test, {
+  @HasMany(() => Tests, {
     onDelete: 'CASCADE',
     hooks: true,
   })
-  test: Test[];
+  tests: Tests[];
 }

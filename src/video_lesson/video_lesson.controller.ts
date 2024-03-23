@@ -50,55 +50,10 @@ export class Video_lessonController {
   // }
 
   @ApiOperation({ summary: 'Create a new chat' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        lesson_id: {
-          type: 'number',
-        },
-        content: {
-          type: 'string',
-        },
-        video: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
   // @UseGuards(AuthGuard)
-  @Post('')
-  @UseInterceptors(FileInterceptor('video'))
-  create(
-    @Body() video_lessonDto: Video_lessonDto,
-    @UploadedFile(new ImageValidationPipe()) video: Express.Multer.File,
-  ) {
-    return this.video_lessonService.create(video_lessonDto, video);
-  }
-
-  @ApiOperation({ summary: 'Create a url' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  // @UseGuards(AuthGuard)
-  @Post('/create_url')
-  @UseInterceptors(FileInterceptor('file'))
-  create_url(
-    @UploadedFile(new ImageValidationPipe()) file: Express.Multer.File,
-  ) {
-    console.log('object');
-    return this.video_lessonService.create_url(file);
+  @Post()
+  create(@Body() video_lessonDto: Video_lessonDto) {
+    return this.video_lessonService.create(video_lessonDto);
   }
 
   @ApiOperation({ summary: 'Get all video_lessons' })

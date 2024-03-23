@@ -1,32 +1,20 @@
 import { BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table } from 'sequelize-typescript';
 import { Lesson } from '../../lessons/models/lesson.models';
-import { Variants } from '../../variants/models/variants.models';
 
-interface TestAttributes {
-  title: string;
+interface TestsAttributes {
   lesson_id: number;
+  question: string;
+  tests: string[];
 }
 
-@Table({ tableName: 'test' })
-export class Test extends Model<Test, TestAttributes> {
+@Table({ tableName: 'tests' })
+export class Tests extends Model<Tests, TestsAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   })
   id: number;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  title: string;
-
-  @HasMany(() => Variants, {
-    onDelete: 'CASCADE',
-    hooks: true,
-  })
-  variants: Variants[];
 
   @ForeignKey(() => Lesson)
   @Column({
@@ -35,5 +23,17 @@ export class Test extends Model<Test, TestAttributes> {
   lesson_id: number;
 
   @BelongsTo(() => Lesson)
-  lessons: Lesson[];
+  lesson: Lesson[];
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  question: string;
+
+  @Column({
+    type: DataType.ARRAY(DataType.STRING),
+    allowNull: false,
+  })
+  tests: string[];
 }

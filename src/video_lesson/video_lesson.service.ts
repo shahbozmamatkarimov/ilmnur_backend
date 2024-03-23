@@ -16,6 +16,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { FilesService } from '../files/files.service';
 import { videoDuration } from '@numairawan/video-duration';
 import { Lesson } from '../lessons/models/lesson.models';
+import { Uploaded } from 'src/uploaded/models/uploaded.models';
 
 @Injectable()
 export class Video_lessonService {
@@ -26,63 +27,32 @@ export class Video_lessonService {
     private readonly fileService: FilesService,
   ) {}
 
-  async create(video_lessonDto: Video_lessonDto, video: any): Promise<object> {
+  async create(video_lessonDto: Video_lessonDto): Promise<object> {
+    console.log(video_lessonDto)
     try {
-      if (video) {
-        const file = await this.fileService.createFile(video);
-        let duration: any = await videoDuration(file);
-        duration = duration.seconds;
-        console.log(file);
-        if (file != 'error') {
-          video_lessonDto.video = file;
-          const video_lesson = await this.video_lessonRepository.create({
-            ...video_lessonDto,
-            duration,
-          });
-          return {
-            statusCode: HttpStatus.OK,
-            message: 'Created successfully',
-            data: video_lesson,
-          };
-        } else {
-          return {
-            statusCode: HttpStatus.BAD_REQUEST,
-            error: 'Error while uploading a file',
-          };
-        }
-      } else {
-        return {
-          statusCode: HttpStatus.BAD_REQUEST,
-          error: 'Error while uploading a file',
-        };
+      const videoLesson = await this.video_lessonRepository.findOne({
+        where: { lesson_id: video_lessonDto.lesson_id },
+      });
+      if (videoLesson) {
+        throw new BadRequestException("Already created")
       }
+      const video_lesson =
+        await this.video_lessonRepository.create(video_lessonDto);
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Created successfully',
+        data: video_lesson,
+      };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 
-  async create_url(file: any) {
-    try {
-      console.log('object');
-      if (file) {
-        file = await this.fileService.createFile(file);
-        if (file != 'error') {
-          return { statusCode: HttpStatus.OK, data: file };
-        } else {
-          return {
-            statusCode: HttpStatus.BAD_REQUEST,
-            error: 'Error while uploading a file',
-          };
-        }
-      }
-    } catch (error) {
-      return { statusCode: HttpStatus.BAD_REQUEST, error: error.message };
-    }
-  }
-
   async getAll(): Promise<object> {
     try {
-      const video_lessons = await this.video_lessonRepository.findAll();
+      const video_lessons = await this.video_lessonRepository.findAll({
+        include: [{ model: Uploaded }],
+      });
       return {
         statusCode: HttpStatus.OK,
         data: video_lessons,

@@ -8,20 +8,32 @@ import {
   IsString,
 } from 'class-validator';
 
-export class TestDto {
-  @ApiProperty({
-    example: 'Natural sonlar',
-    description: 'Title of the test',
-  })
-  @IsNotEmpty()
-  @IsString()
-  title: string;
-
+export class TestsDto {
   @ApiProperty({
     example: 1,
-    description: 'Lesson id of the test',
+    description: 'Test id of the tests',
   })
   @IsNotEmpty()
   @IsNumber()
   lesson_id: number;
+
+  @ApiProperty({
+    example: 'Quyidagi izotopda nechta proton, elektron va neytron bor? 18^F-',
+    description: 'Question of the tests',
+  })
+  @IsNotEmpty()
+  @IsString()
+  question: string;
+
+  @ApiProperty({
+    example: [
+      '5 proton, 4 elektron, 2 neytron',
+      '4 proton, 8 elektron, 1 neytron',
+      '6 proton, 1 elektron, 8 neytron',
+    ],
+    description: 'Tests of the tests',
+  })
+  @IsNotEmpty()
+  @IsArray()
+  tests: string[];
 }

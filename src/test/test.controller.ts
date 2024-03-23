@@ -6,69 +6,61 @@ import {
   Put,
   Param,
   Delete,
-  Res,
-  UseInterceptors,
-  UploadedFile,
 } from '@nestjs/common';
-import { TestService } from './test.service';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
-import { CookieGetter } from 'src/decorators/cookieGetter.decorator';
-import { TestDto } from './dto/test.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ChatDto } from '../chat/dto/chat.dto';
-import { ImageValidationPipe } from '../pipes/image-validation.pipe';
-import { CheckDto } from './dto/check.dto';
+import { TestsService } from './test.service';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { TestsDto } from './dto/test.dto';
 
-@ApiTags('Test')
-@Controller('test')
-export class TestController {
-  constructor(private readonly testService: TestService) { }
+@ApiTags('Tests')
+@Controller('tests')
+export class TestsController {
+  constructor(private readonly testsService: TestsService) {}
 
-  @ApiOperation({ summary: 'Create a new test' })
+  @ApiOperation({ summary: 'Create a new tests' })
   @Post('/create')
-  create(@Body() testDto: TestDto) {
-    return this.testService.create(testDto);
+  create(@Body() testsDto: TestsDto) {
+    return this.testsService.create(testsDto);
   }
 
-  @ApiOperation({ summary: 'Create a new test' })
-  @Post('/check/:id')
-  checkAnswers(@Param('id') id: number, @Body() checkDto: CheckDto) {
-    return this.testService.checkAnswers(id, checkDto);
-  }
-
-  @ApiOperation({ summary: 'Get all tests' })
+  @ApiOperation({ summary: 'Get all testss' })
   // @UseGuards(AuthGuard)
   @Get()
-  getTests() {
-    return this.testService.getTests();
+  getTestss() {
+    return this.testsService.getTestss();
   }
 
-  @ApiOperation({ summary: 'Get test by ID' })
+  @ApiOperation({ summary: 'Get all testss' })
+  // @UseGuards(AuthGuard)
+  @Get('/:class_number')
+  getAll(@Param('class_number') class_number: number) {
+    return this.testsService.getAll(class_number);
+  }
+
+  @ApiOperation({ summary: 'Get tests by ID' })
   // @UseGuards(AuthGuard)
   @Get(':id')
   getById(@Param('id') id: number) {
-    return this.testService.getById(id);
+    return this.testsService.getById(id);
   }
 
-  @ApiOperation({ summary: 'Get tests with pagination' })
+  @ApiOperation({ summary: 'Get testss with pagination' })
   // @UseGuards(AuthGuard)
   @Get('pagination/:page')
   pagination(@Param('page') page: number) {
-    return this.testService.pagination(page);
+    return this.testsService.pagination(page);
   }
 
-  @ApiOperation({ summary: 'Update test profile by ID' })
+  @ApiOperation({ summary: 'Update tests profile by ID' })
   // @UseGuards(AuthGuard)
   @Put('/:id')
-  update(@Param('id') id: number, @Body() testDto: TestDto) {
-    return this.testService.update(id, testDto);
+  update(@Param('id') id: number, @Body() testsDto: TestsDto) {
+    return this.testsService.update(id, testsDto);
   }
 
-  @ApiOperation({ summary: 'Delete test' })
+  @ApiOperation({ summary: 'Delete tests' })
   // @UseGuards(AuthGuard)
   @Delete(':id')
-  deleteTest(@Param('id') id: number) {
-    return this.testService.delete(id);
+  deleteTests(@Param('id') id: number) {
+    return this.testsService.delete(id);
   }
 }

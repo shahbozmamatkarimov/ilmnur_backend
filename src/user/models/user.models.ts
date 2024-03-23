@@ -5,8 +5,18 @@ interface UserAttributes {
   full_name: string;
   phone: string;
   role: string[];
-  subject: string;
+  subjects: string[];
   class: string[][];
+  region: string;
+  district: string;
+  school_number: number;
+  user_status: string;
+}
+
+export enum UserStatus {
+  pending = 'pending',
+  inprogress = 'inprogress',
+  logged = 'logged',
 }
 
 export enum GenderType {
@@ -51,6 +61,9 @@ export class User extends Model<User, UserAttributes> {
   @Column({ type: DataType.ARRAY(DataType.STRING) })
   role: string[];
 
+  @Column({ type: DataType.ARRAY(DataType.STRING), allowNull: true })
+  subjects: string[];
+
   @Column(
     DataType.ENUM({
       values: Object.keys(GenderType),
@@ -84,6 +97,24 @@ export class User extends Model<User, UserAttributes> {
 
   @Column({
     type: DataType.STRING,
+    allowNull: false,
+  })
+  region: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  district: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  school_number: number;
+
+  @Column({
+    type: DataType.STRING,
     allowNull: true,
   })
   hashed_password: string;
@@ -93,4 +124,12 @@ export class User extends Model<User, UserAttributes> {
     hooks: true,
   })
   chats: Chat[];
+
+  @Column({
+    type: DataType.ENUM({
+      values: Object.keys(UserStatus),
+    }),
+    defaultValue: UserStatus.pending,
+  })
+  user_status: UserStatus;
 }
