@@ -1,3 +1,4 @@
+import { Socket } from 'socket.io';
 import { FilesService } from '../files/files.service';
 import {
   BadRequestException,
@@ -24,7 +25,35 @@ export class UserService {
     @InjectModel(User) private userRepository: typeof User,
     private readonly jwtService: JwtService,
     private readonly fileService: FilesService,
-  ) { }
+  ) {}
+
+  async userAviable(socket: Socket, id: number, is_online: boolean): Promise<object> {
+    socket.emit('connected', "data");
+    try {
+      const user = await this.userRepository.findByPk(id);
+      if (user) {
+        this.userRepository.update(
+          { is_online },
+          {
+            where: { id },
+            returning: true,
+          },
+        );
+        return {
+          statusCode: HttpStatus.OK,
+          message: 'You are online!',
+          data: user,
+        };
+      }
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'User not found!',
+      };
+    } catch (error) {
+      // throw new BadRequestException(error.message);
+      console.log(error.message);
+    }
+  }
 
   async register(registerUserDto: RegisterUserDto): Promise<object> {
     try {
@@ -71,10 +100,7 @@ export class UserService {
   //   }
   // }
 
-  async login(
-    loginUserDto: LoginUserDto,
-    res: Response,
-  ): Promise<object> {
+  async login(loginUserDto: LoginUserDto, res: Response): Promise<object> {
     try {
       const user = await this.userRepository.findOne({
         where: { id: loginUserDto.user_id },
@@ -100,14 +126,15 @@ export class UserService {
 
   async getAll(role: string): Promise<object> {
     try {
-      const users = await this.userRepository.findAll({
-        where: {
-          role: {[Op.overlap]: [role],}
-        }
-      });
+      console.log(role);
+      const where: any = {};
+      if (role != 'all') {
+        where.role = { [Op.overlap]: [role] };
+      }
+      const users = await this.userRepository.findAll({ where });
       return {
         statusCode: HttpStatus.OK,
-        data: users
+        data: users,
       };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -117,9 +144,7 @@ export class UserService {
   async getReyting(): Promise<object> {
     try {
       const users = await this.userRepository.findAll({
-        order: [
-          ["test_reyting", 'DESC'],
-        ]
+        order: [['test_reyting', 'DESC']],
       });
       return {
         statusCode: HttpStatus.OK,
@@ -228,10 +253,7 @@ export class UserService {
   //   }
   // }
 
-  async update(
-    id: string,
-    updateDto: UpdateDto,
-  ): Promise<object> {
+  async update(id: string, updateDto: UpdateDto): Promise<object> {
     try {
       const user = await this.userRepository.findByPk(id);
       if (!user) {
@@ -243,7 +265,7 @@ export class UserService {
       });
       return {
         statusCode: HttpStatus.OK,
-        message: "Updated successfully",
+        message: 'Updated successfully',
         data: update[1][0],
       };
     } catch (error) {
@@ -251,10 +273,7 @@ export class UserService {
     }
   }
 
-  async updateProfileImage(
-    id: string,
-    image: any
-  ): Promise<object> {
+  async updateProfileImage(id: string, image: any): Promise<object> {
     try {
       const user = await this.userRepository.findByPk(id);
       if (!user) {
@@ -269,13 +288,16 @@ export class UserService {
           };
         }
       }
-      const update = await this.userRepository.update({ image: image.url }, {
-        where: { id },
-        returning: true,
-      });
+      const update = await this.userRepository.update(
+        { image: image.url },
+        {
+          where: { id },
+          returning: true,
+        },
+      );
       return {
         statusCode: HttpStatus.OK,
-        message: "Updated successfully",
+        message: 'Updated successfully',
         data: update[1][0],
       };
     } catch (error) {
@@ -285,19 +307,22 @@ export class UserService {
 
   async updateTestReyting(id: number): Promise<object> {
     try {
-      console.log(id, '-----------------------')
+      console.log(id, '-----------------------');
       const user = await this.userRepository.findByPk(id);
       if (!user) {
         throw new NotFoundException('User not found');
       }
       const test_reyting = user.test_reyting + 1;
-      const update = await this.userRepository.update({ test_reyting }, {
-        where: { id },
-        returning: true,
-      });
+      const update = await this.userRepository.update(
+        { test_reyting },
+        {
+          where: { id },
+          returning: true,
+        },
+      );
       return {
         statusCode: HttpStatus.OK,
-        message: "Updated successfully",
+        message: 'Updated successfully',
         data: update[1][0],
       };
     } catch (error) {
@@ -314,14 +339,10 @@ export class UserService {
       user.destroy();
       return {
         statusCode: HttpStatus.ACCEPTED,
-        message: "Deleted successfully",
+        message: 'Deleted successfully',
       };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 }
-function ILIKE(arg0: string): import("sequelize").WhereAttributeHashValue<object> {
-  throw new Error('Function not implemented.');
-}
-

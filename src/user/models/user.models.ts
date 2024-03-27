@@ -11,6 +11,7 @@ interface UserAttributes {
   district: string;
   school_number: number;
   user_status: string;
+  is_online: boolean;
 }
 
 export enum UserStatus {
@@ -132,4 +133,10 @@ export class User extends Model<User, UserAttributes> {
     defaultValue: UserStatus.pending,
   })
   user_status: UserStatus;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  is_online: boolean;
 }

@@ -10,6 +10,7 @@ import {
 import { TestsService } from './test.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TestsDto } from './dto/test.dto';
+import { CheckDto } from './dto/check.dto';
 
 @ApiTags('Tests')
 @Controller('tests')
@@ -25,15 +26,30 @@ export class TestsController {
   @ApiOperation({ summary: 'Get all testss' })
   // @UseGuards(AuthGuard)
   @Get()
-  getTestss() {
-    return this.testsService.getTestss();
+  getTests() {
+    return this.testsService.getTests();
   }
 
   @ApiOperation({ summary: 'Get all testss' })
   // @UseGuards(AuthGuard)
-  @Get('/:class_number')
+  @Get('/class/:class_number')
   getAll(@Param('class_number') class_number: number) {
     return this.testsService.getAll(class_number);
+  }
+
+  
+  @ApiOperation({ summary: 'checkById all tests' })
+  // @UseGuards(AuthGuard)
+  @Post('/check/:id')
+  checkById(@Param('id') id: number, @Body() answers: any) {
+    return this.testsService.checkById(id, answers);
+  }
+
+  @ApiOperation({ summary: 'checkById all tests' })
+  // @UseGuards(AuthGuard)
+  @Post('/check_answers/:id')
+  checkAllAnswers(@Param('id') id: number, @Body() answers: CheckDto) {
+    return this.testsService.checkAnswers(id, answers);
   }
 
   @ApiOperation({ summary: 'Get tests by ID' })

@@ -35,5 +35,5 @@ export class TestsDto {
   })
   @IsNotEmpty()
   @IsArray()
-  tests: string[];
+  variants: string[];
 }

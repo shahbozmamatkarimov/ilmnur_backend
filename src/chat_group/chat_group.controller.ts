@@ -10,11 +10,14 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ChatGroupDto } from './dto/chat_group.dto';
 import { ChatGroupService } from './chat_group.service';
+import { UserService } from 'src/user/user.service';
 
 @ApiTags('ChatGroup')
 @Controller('chatgroup')
 export class ChatGroupController {
-  constructor(private readonly chatGroupService: ChatGroupService) { }
+  constructor(
+    private readonly chatGroupService: ChatGroupService,
+    ) { }
 
   @ApiOperation({ summary: 'Create a new chat group' })
   @Post('/create')

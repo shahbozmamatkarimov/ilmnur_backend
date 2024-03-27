@@ -26,26 +26,53 @@ import { ChatDto } from './dto/chat.dto';
 import { ChatService } from './chat.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageValidationPipe } from 'src/pipes/image-validation.pipe';
+import { UserService } from 'src/user/user.service';
 
 @ApiTags('chat')
 @WebSocketGateway({ cors: { origin: '*', credentials: true } }) // cors
 @Controller('chat')
 export class ChatController
-  implements OnGatewayConnection, OnGatewayDisconnect {
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer() server: Server;
 
-  constructor(private readonly chatService: ChatService) { }
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly userService: UserService,
+  ) {}
 
-  handleConnection(client: Socket) {
-    this.server.on('connection', (socket) => {
-      console.log(socket.id, '-------------');
-    });
+  async handleConnection(client: Socket) {
+    // this.server.on('connection', async (socket) => {
+    //   console.log(socket.id, '-------------');
+    //   const id = +socket.handshake.query.id;
+    //   const data: any = await this.userService.userAviable(id, true);
+    //   this.server.emit('connected', data);
+
+    //   socket.on('disconnect', this.handleDisconnect.bind(this, id));
+    // });
     // Handle connection
+    this.server.on('connection', async (socket) => {
+      const id = +socket.handshake.query.id;
+      const data: any = await this.userService.userAviable(socket, id, true);
+      this.server.emit('connected', data);
+      // Bind disconnect listener in constructor
+      // socket.on('disconnect', this.handleDisconnect.bind(socket));
+    });
   }
 
-  handleDisconnect(client: Socket) {
-    console.log('disconnected from chat:', client.id);
-    // Handle disconnection
+  // async handleDisconnect(userId: number) {
+  //   console.log('Disconnected user:', userId);
+  //   await this.userService.userAviable(userId, false);
+  // }
+
+  async handleDisconnect(client: Socket) {
+    const id = +client.handshake?.query?.id;
+    console.log(id, '================================');
+    await this.userService.userAviable(client, id, false);
+    console.log("👎🛵👎👎")
+    // delete this.connectedClients[clientId];
+    // console.log(this.connectedClients)
+    // Perform additional cleanup if needed
   }
 
   @ApiOperation({ summary: 'Create a new chat' })
@@ -97,16 +124,14 @@ export class ChatController
     @Req() req: any,
   ) {
     const chat = this.chatService.create(chatDto, file, req.headers);
-    client.emit("created");
+    client.emit('created');
     return chat;
   }
 
   @ApiOperation({ summary: 'Get all chats' })
   // @UseGuards(AuthGuard)
   @SubscribeMessage('getAll/created')
-  async created(
-    @MessageBody() { page }: { page: number },
-  ) {
+  async created(@MessageBody() { page }: { page: number }) {
     const chats = await this.chatService.findAll(page);
     this.server.emit('chats', chats);
   }
@@ -115,7 +140,8 @@ export class ChatController
   // @UseGuards(AuthGuard)
   @SubscribeMessage('getAll/chats')
   async getGroupChats(
-    @MessageBody() { chatgroup_id, page }: { chatgroup_id: number, page: number },
+    @MessageBody()
+    { chatgroup_id, page }: { chatgroup_id: number; page: number },
     @ConnectedSocket() client: Socket,
   ) {
     const chats = await this.chatService.getGroupChats(chatgroup_id, page);
@@ -147,9 +173,13 @@ export class ChatController
   @ApiOperation({ summary: 'Update lesson profile by ID' })
   // @UseGuards(AuthGuard)
   @Put('/:id')
-  update(@Param('id') id: string, @Body() chatDto: ChatDto, @ConnectedSocket() client: Socket) {
-    const chat =  this.chatService.update(id, chatDto);
-    client.emit("created");
+  update(
+    @Param('id') id: string,
+    @Body() chatDto: ChatDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const chat = this.chatService.update(id, chatDto);
+    client.emit('created');
     return chat;
   }
 
@@ -169,7 +199,7 @@ export class ChatController
   @Delete(':id')
   async deleteUser(@Param('id') id: string, @ConnectedSocket() client: Socket) {
     const chat = await this.chatService.delete(id);
-    client.emit("created");
+    client.emit('created');
     return chat;
   }
 }

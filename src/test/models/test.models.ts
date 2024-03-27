@@ -4,7 +4,7 @@ import { Lesson } from '../../lessons/models/lesson.models';
 interface TestsAttributes {
   lesson_id: number;
   question: string;
-  tests: string[];
+  variants: string[];
 }
 
 @Table({ tableName: 'tests' })
@@ -35,5 +35,5 @@ export class Tests extends Model<Tests, TestsAttributes> {
     type: DataType.ARRAY(DataType.STRING),
     allowNull: false,
   })
-  tests: string[];
+  variants: string[];
 }

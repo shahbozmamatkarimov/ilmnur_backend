@@ -13,13 +13,14 @@ import { Response } from 'express';
 import { TestsDto } from './dto/test.dto';
 import { generateToken, writeToCookie } from 'src/utils/token';
 import { Sequelize } from 'sequelize-typescript';
+import { CheckDto } from './dto/check.dto';
 
 @Injectable()
 export class TestsService {
   constructor(
     @InjectModel(Tests) private testsRepository: typeof Tests,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async create(testsDto: TestsDto): Promise<object> {
     try {
@@ -36,21 +37,22 @@ export class TestsService {
 
   async getAll(class_name: number): Promise<object> {
     try {
-      const testss = await this.testsRepository.findAll({
+      const tests = await this.testsRepository.findAll({
         attributes: {
           include: [
             [
               Sequelize.literal(
-                `(SELECT COUNT(*) FROM "lesson" WHERE "lesson"."tests_id" = "Tests"."id" and "lesson"."class" = ${class_name})`,
+                `(SELECT COUNT(*) FROM "lesson" WHERE "lesson"."id" = "Tests"."lesson_id" and "lesson"."class" = ${class_name})`,
               ),
               'lessonsCount',
             ],
             [
               Sequelize.literal(`(
-                SELECT SUM("video_lesson"."duration")
+                SELECT SUM("uploaded"."duration")
                 FROM "lesson"
                 INNER JOIN "video_lesson" ON "lesson"."id" = "video_lesson"."lesson_id"
-                WHERE "lesson"."tests_id" = "Tests"."id"
+                INNER JOIN "uploaded" ON "video_lesson"."video_id" = "uploaded"."id"  
+                WHERE "lesson"."id" = "Tests"."lesson_id"
                 AND "lesson"."class" = '${class_name}'
               )`),
               'totalDuration',
@@ -60,14 +62,14 @@ export class TestsService {
       });
       return {
         statusCode: HttpStatus.OK,
-        data: testss,
+        data: tests,
       };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 
-  async getTestss(): Promise<object> {
+  async getTests(): Promise<object> {
     try {
       const testss = await this.testsRepository.findAll();
       return {
@@ -81,7 +83,11 @@ export class TestsService {
 
   async getById(id: number): Promise<object> {
     try {
-      const tests = await this.testsRepository.findByPk(id);
+      const tests = await this.testsRepository.findAll({
+        where: {
+          lesson_id: id,
+        }
+      });
       if (!tests) {
         throw new NotFoundException('Tests not found');
       }
@@ -100,10 +106,50 @@ export class TestsService {
       if (!test) {
         throw new NotFoundException('Tests not found');
       }
-      if (test.tests[0] == answer) {
+      if (test.variants[0] == answer) {
         return [id, true];
       }
       return [id, false];
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async checkAnswers(student_id: number, checkDto: CheckDto): Promise<object> {
+    const { answers } = checkDto;
+    try {
+      const results = {};
+      let student: any;
+      let res: object, id: number, answer: string;
+      for (let i of answers) {
+        id = +i[0];
+        answer = i[1];
+        res = await this.checkById(id, answer);
+        results[res[0]] = res[1];
+      }
+      let ball = 0;
+      for (let i in results) {
+        if (results[i]) {
+          ball += 1;
+        }
+      }
+      console.log(ball)
+      const percentage = (ball / Object.keys(results)?.length) * 100;
+
+      if (percentage >= 70) {
+        // student = await this.studentService.updateTestReyting(student_id);
+      }
+
+      console.log(percentage)
+
+      return {
+        statusCode: HttpStatus.OK,
+        data: {
+          results,
+          ball: [percentage, ball],
+          student,
+        },
+      };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
